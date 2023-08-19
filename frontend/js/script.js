@@ -4,6 +4,7 @@ import { conectaApi } from "./conectaApi"
 const tbody = document.querySelector('tbody')
 
 
+
 const createElement = (tag, innerText = '', innerHTML = '') => {
     const element = document.createElement(tag)
 
