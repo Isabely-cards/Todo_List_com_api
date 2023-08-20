@@ -4,6 +4,4 @@ async function fetchTasks() {
     return tasks
 };
 
-export const conectaApi = {
-    fetchTasks,
-}
+
