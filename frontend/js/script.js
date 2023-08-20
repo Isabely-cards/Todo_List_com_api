@@ -3,6 +3,7 @@ const addForm = document.querySelector('.add-form')
 const inputTask = document.querySelector('.input-task')
 
 const fetchTasks = async () => {
+    
     const response = await fetch('http://localhost:3333/tasks')
     const tasks = await response.json()
     return tasks
@@ -75,8 +76,6 @@ const createRow = async(task) => {
     tr.appendChild(tdCreatedAt)
     tr.appendChild(tdStatus)
     tr.appendChild(tdActions)
-
-    tbody.appendChild(tr)
     
     return tr
 
