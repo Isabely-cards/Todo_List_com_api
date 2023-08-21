@@ -1,95 +1,147 @@
-const tbody = document.querySelector('tbody')
-const addForm = document.querySelector('.add-form')
-const inputTask = document.querySelector('.input-task')
+const tbody = document.querySelector('tbody');
+const addForm = document.querySelector('.add-form');
+const inputTask = document.querySelector('.input-task');
 
 const fetchTasks = async () => {
-    
-    const response = await fetch('http://localhost:3333/tasks')
-    const tasks = await response.json()
-    return tasks
+  const response = await fetch('http://localhost:3333/tasks')
+  const tasks = await response.json()
+  return tasks;
+}
 
-};
+const addTask = async (event) => {
+  event.preventDefault();
 
-const addTask = async (e) => {
-    e.preventDefault()
+  const task = { title: inputTask.value };
 
-    const task = { title: inputTask.value}
+  await fetch('http://localhost:3333/tasks', {
+    method: 'post',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(task),
+  });
 
-    await fetch('http://localhost:3333/tasks', {
-        method: 'post',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(task)
-    })
+  loadTasks();
+  inputTask.value = '';
+}
+
+const deleteTask = async (id) => {
+  await fetch(`http://localhost:3333/tasks/${id}`, {
+    method: 'delete',
+  });
+
+  loadTasks();
+}
+
+const updateTask = async ({ id, title, status }) => {
+
+  await fetch(`http://localhost:3333/tasks/${id}`, {
+    method: 'put',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, status }),
+  });
+
+  loadTasks();
 }
 
 
+
+const formatDate = (dateUTC) => {
+  const options = { dateStyle: 'long', timeStyle: 'short' };
+  const date = new Date(dateUTC).toLocaleString('pt-br', options);
+  return date;
+}
+
 const createElement = (tag, innerText = '', innerHTML = '') => {
-    const element = document.createElement(tag)
+  const element = document.createElement(tag);
 
-    if(innerText){
-        element.innerText = innerText
-    }
+  if (innerText) {
+    element.innerText = innerText;
+  }
 
-    if(innerHTML){
-        element.innerHTML = innerHTML
-    }
+  if (innerHTML) {
+    element.innerHTML = innerHTML;
+  }
 
-    return element
+  return element;
 }
 
 const createSelect = (value) => {
-    const options = `
-        <option value="pendente">pendente</option>
-        <option value="em andamento">em andamento</option>
-        <option value="concluída">concluída</option>
-    `
-    const select = createElement('select', '', options)
-    select.value = value
+  const options = `
+    <option value="pendente">pendente</option>
+    <option value="em andamento">em andamento</option>
+    <option value="concluída">concluída</option>
+  `;
 
-    return select
+  const select = createElement('select', '', options);
+
+  select.value = value;
+
+  return select;
 }
 
-const createRow = async(task) => {
+const createRow = (task) => {
 
-    const { id, title, created_at, status} = task
+  const { id, title, created_at, status } = task;
 
-    const tr = createElement('tr')
-    const tdTitle = createElement('td', title)
-    const tdCreatedAt = createElement('td', created_at)
-    const tdStatus = createElement('td')
-    const tdActions = createElement('td')
+  const tr = createElement('tr');
+  const tdTitle = createElement('td', title);
+  const tdCreatedAt = createElement('td', formatDate(created_at));
+  const tdStatus = createElement('td');
+  const tdActions = createElement('td');
 
-    const select = createSelect(status)
+  const select = createSelect(status);
 
-    const editButton = createElement('button', '', '<span class="material-symbols-outlined">edit_note</span>')
-    const deleteButton = createElement('button', '', '<span class="material-symbols-outlined">delete</span>')
+  select.addEventListener('change', ({ target }) => updateTask({ ...task, status: target.value }));
+
+  const editButton = createElement('button', '', '<span class="material-symbols-outlined">edit</span>');
+  const deleteButton = createElement('button', '', '<span class="material-symbols-outlined">delete</span>');
+  
+  const editForm = createElement('form');
+  const editInput = createElement('input');
+
+  editInput.value = title;
+  editForm.appendChild(editInput);
+  
+  editForm.addEventListener('submit', (event) => {
+    event.preventDefault();
     
-    editButton.classList.add('btn-action')
-    deleteButton.classList.add('btn-action')
+    updateTask({ id, title: editInput.value, status });
+  });
 
-    tdStatus.appendChild(select)
+  editButton.addEventListener('click', () => {
+    tdTitle.innerText = '';
+    tdTitle.appendChild(editForm);
+  });
 
-    tdActions.appendChild(editButton)
-    tdActions.appendChild(deleteButton)
+  editButton.classList.add('btn-action');
+  deleteButton.classList.add('btn-action');
 
-    tr.appendChild(tdTitle)
-    tr.appendChild(tdCreatedAt)
-    tr.appendChild(tdStatus)
-    tr.appendChild(tdActions)
-    
-    return tr
+  deleteButton.addEventListener('click', () => deleteTask(id));
+  
+  tdStatus.appendChild(select);
 
+  tdActions.appendChild(editButton);
+  tdActions.appendChild(deleteButton);
+
+  tr.appendChild(tdTitle);
+  tr.appendChild(tdCreatedAt);
+  tr.appendChild(tdStatus);
+  tr.appendChild(tdActions);
+
+  return tr;
 }
 
 const loadTasks = async () => {
-    const tasks = await fetchTasks()
+  const tasks = await fetchTasks();
 
-    tasks.forEach((task) => {
-        const tr = createRow(task)
-        tbody.appendChild(tr)
-    });
+  tbody.innerHTML = '';
+
+  tasks.forEach((task) => {
+    const tr = createRow(task);
+    tbody.appendChild(tr);
+  });
 }
 
-addForm.addEventListener('submit', addTask)
 
-loadTasks()
+addForm.addEventListener('submit', addTask);
+
+loadTasks();
