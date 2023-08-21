@@ -13,17 +13,21 @@ body {
 }
 
 main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     background-color: #FFF;
     border-radius: 8px;
     padding: 20px;
-    width: 90%;
-    margin: 40px auto;
+    width: 50%;
+    margin: 20px auto;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
 }
 
 .add-form {
     display: flex;
+    align-items: center;
     margin-bottom: 50px;
     gap: 15px;
     width: 100%;
